@@ -2,6 +2,30 @@
 BINDIR=bin
 SRCDIR=src
 
+JSRCDIR=$(SRCDIR)/java/src/com/lightboxtechnologies/lightgrep
+JTESTDIR=$(SRCDIR)/java/test/com/lightboxtechnologies/lightgrep
+
+JAVA_SOURCES=\
+	ContextHandle.java \
+	ContextOptions.java \
+	Handle.java \
+	HitCallback.java \
+	KeyOptions.java \
+	KeywordException.java \
+ 	ParserHandle.java \
+	ProgramHandle.java \
+	ProgramOptions.java \
+	SearchHit.java
+JAVA_SOURCES:=$(addprefix $(JSRCDIR)/,$(JAVA_SOURCES))
+JAVA_CLASSES=$(patsubst %,$(BINDIR)/%.class,$(basename $(JAVA_SOURCES)))
+JAVA_CLASS_NAMES=$(subst /,.,$(subst $(SRCDIR)/java/src/,,$(basename $(JAVA_SOURCES))))
+
+JAVA_TESTS=LightgrepTest.java
+JAVA_TESTS:=$(addprefix $(JTESTDIR)/,$(JAVA_TESTS))
+JAVA_TEST_CLASSES=$(patsubst %,$(BINDIR)/%.class,$(basename $(JAVA_TESTS)))
+
+
+
 LIB=$(BINDIR)/$(SRCDIR)/jni/libjlightgrep.so
 LIB_SOURCES=$(SRCDIR)/jni/jlightgrep.cpp
 LIB_OBJECTS=$(patsubst %,$(BINDIR)/%.os,$(basename $(LIB_SOURCES)))
@@ -32,7 +56,7 @@ debug: all
 
 lib: $(LIB)
 
-test: $(LIB) $(BINDIR)/src/java/test/com/lightboxtechnologies/lightgrep/LightgrepTest.class
+test: $(LIB) $(JAVA_TEST_CLASSES)
 	LD_LIBRARY_PATH=../lightgrep/lib $(JAVA) -cp /usr/share/java/junit.jar:bin/src/java/src:bin/src/java/test -Djava.library.path=bin/src/jni:../lightgrep/lib:../lightgrep/bin/src/lib org.junit.runner.JUnitCore com.lightboxtechnologies.lightgrep.LightgrepTest
 
 $(BINDIR)/src/java/src $(BINDIR)/src/java/test:
@@ -49,13 +73,13 @@ $(LIB): $(LIB_OBJECTS)
 $(BINDIR)/src/jni/jlightgrep.os: src/jni/jlightgrep.cpp $(BINDIR)/src/jni/jlightgrep.h
 	$(CXX) -o $@ -c $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) $<
 
-$(BINDIR)/src/jni/jlightgrep.h: $(BINDIR)/src/java/src/com/lightboxtechnologies/lightgrep/Lightgrep.class
-	$(JAVAH) -o $@ -jni -cp bin/src/java/src com.lightboxtechnologies.lightgrep.Lightgrep
+$(BINDIR)/src/jni/jlightgrep.h: $(JAVA_CLASSES)
+	$(JAVAH) -o $@ -jni -cp $(BINDIR)/src/java/src $(JAVA_CLASS_NAMES)
 
-$(BINDIR)/src/java/src/%.class: src/java/src/%.java | $(BINDIR)/src/java/src
-	$(JAVAC) -d $(BINDIR)/src/java/src -Xlint $<
+$(JAVA_CLASSES): $(JAVA_SOURCES) | $(BINDIR)/src/java/src
+	$(JAVAC) -d $(BINDIR)/src/java/src -cp $(BINDIR)/src/java/src -Xlint $^
 
-$(BINDIR)/src/java/test/com/lightboxtechnologies/lightgrep/LightgrepTest.class: src/java/test/com/lightboxtechnologies/lightgrep/LightgrepTest.java $(BINDIR)/src/java/src/com/lightboxtechnologies/lightgrep/Lightgrep.class | $(BINDIR)/src/java/test
-	$(JAVAC) -d $(BINDIR)/src/java/test -Xlint -cp /usr/share/java/junit.jar:$(BINDIR)/src/java/src $<
+$(JAVA_TEST_CLASSES): $(JAVA_TESTS) | $(BINDIR)/src/java/test
+	$(JAVAC) -d $(BINDIR)/src/java/test -cp $(BINDIR)/src/java/src:$(BINDIR)/src/java/test:/usr/share/java/junit.jar -Xlint $^
 
 .PHONY: all clean example lib jar test
