@@ -12,6 +12,7 @@ JAVA_SOURCES=\
 	HitCallback.java \
 	KeyOptions.java \
 	KeywordException.java \
+	LibraryLoader.java \
  	ParserHandle.java \
 	ProgramHandle.java \
 	ProgramOptions.java \
