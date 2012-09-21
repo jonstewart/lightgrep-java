@@ -16,7 +16,8 @@ JAVA_SOURCES=\
  	ParserHandle.java \
 	ProgramHandle.java \
 	ProgramOptions.java \
-	SearchHit.java
+	SearchHit.java \
+	Throws.java
 JAVA_SOURCES:=$(addprefix $(JSRCDIR)/,$(JAVA_SOURCES))
 JAVA_CLASSES=$(patsubst %,$(BINDIR)/%.class,$(basename $(JAVA_SOURCES)))
 JAVA_CLASS_NAMES=$(subst /,.,$(subst $(SRCDIR)/java/src/,,$(basename $(JAVA_SOURCES))))
