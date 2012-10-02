@@ -50,7 +50,7 @@ LDFLAGS=-shared
 LDPATHS=-L../lightgrep/lib -L../lightgrep/src/bin/lib
 LDLIBS=-llightgrep -licudata -licuuc
 
-all: lib test
+all: lib test jar
 
 debug: CXXFLAGS+=-g
 debug: CXXFLAGS:=$(filter-out -O3, $(CXXFLAGS))
@@ -60,6 +60,8 @@ lib: $(LIB)
 
 test: $(LIB) $(JAVA_TEST_CLASSES)
 	LD_LIBRARY_PATH=../lightgrep/lib $(JAVA) -cp /usr/share/java/junit.jar:bin/src/java/src:bin/src/java/test -Djava.library.path=bin/src/jni:../lightgrep/lib:../lightgrep/bin/src/lib org.junit.runner.JUnitCore com.lightboxtechnologies.lightgrep.LightgrepTest
+
+jar: $(BINDIR)/src/java/jlightgrep.jar
 
 $(BINDIR)/src/java/src $(BINDIR)/src/java/test:
 	$(MKDIR) -p $@
@@ -71,6 +73,9 @@ clean:
 
 $(LIB): $(LIB_OBJECTS) 
 	$(CXX) -o $@ $(LDFLAGS) $^ $(LDPATHS) $(LDLIBS)
+
+$(BINDIR)/src/java/jlightgrep.jar: $(JAVA_CLASSES)
+	$(JAR) cf $@ -C $(BINDIR)/src/java/src .
 
 $(BINDIR)/src/jni/jlightgrep.os: src/jni/jlightgrep.cpp $(BINDIR)/src/jni/jlightgrep.h
 	$(CXX) -o $@ -c $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) $<
