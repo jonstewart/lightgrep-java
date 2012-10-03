@@ -44,7 +44,7 @@ MKDIR=mkdir
 
 CPPFLAGS=-MMD -MP
 CXXFLAGS=-std=c++0x -O3 -W -Wall -Wextra -pedantic -pipe -fPIC
-INCLUDES=-isystem /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.6.x86_64/include -isystem /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.6.x86_64/include/linux -I../lightgrep/include -Ibin/src/jni
+INCLUDES=-isystem $(JAVA_HOME)/include -isystem $(JAVA_HOME)/include/linux -I../lightgrep/include -Ibin/src/jni
 
 LDFLAGS=-shared
 LDPATHS=-L../lightgrep/lib -L../lightgrep/src/bin/lib
@@ -59,7 +59,7 @@ debug: all
 lib: $(LIB)
 
 test: $(LIB) $(JAVA_TEST_CLASSES)
-	LD_LIBRARY_PATH=../lightgrep/lib $(JAVA) -cp /usr/share/java/junit.jar:bin/src/java/src:bin/src/java/test -Djava.library.path=bin/src/jni:../lightgrep/lib:../lightgrep/bin/src/lib org.junit.runner.JUnitCore com.lightboxtechnologies.lightgrep.LightgrepTest
+	$(JAVA) -cp /usr/share/java/junit.jar:bin/src/java/src:bin/src/java/test -Djava.library.path=bin/src/jni:../lightgrep/lib:../lightgrep/bin/src/lib org.junit.runner.JUnitCore com.lightboxtechnologies.lightgrep.LightgrepTest
 
 jar: $(BINDIR)/src/java/jlightgrep.jar
 
@@ -81,7 +81,8 @@ $(BINDIR)/src/jni/jlightgrep.os: src/jni/jlightgrep.cpp $(BINDIR)/src/jni/jlight
 	$(CXX) -o $@ -c $(CPPFLAGS) $(CXXFLAGS) $(INCLUDES) $<
 
 $(BINDIR)/src/jni/jlightgrep.h: $(JAVA_CLASSES)
-	$(JAVAH) -o $@ -jni -cp $(BINDIR)/src/java/src $(JAVA_CLASS_NAMES)
+	mkdir -p $(BINDIR)/src/jni
+	$(JAVAH) -o $@ -jni -classpath $(BINDIR)/src/java/src $(JAVA_CLASS_NAMES)
 
 $(JAVA_CLASSES): $(JAVA_SOURCES) | $(BINDIR)/src/java/src
 	$(JAVAC) -d $(BINDIR)/src/java/src -cp $(BINDIR)/src/java/src -Xlint $^
